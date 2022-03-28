@@ -3,8 +3,9 @@ const {
   GraphQLID,
   GraphQLString,
   GraphQLList,
+  GraphQLInputType
 } = require("graphql");
-const { Post, Comment, User } = require("../models");
+const { Post, User } = require("../models");
 
 const UserType = new GraphQLObjectType({
   name: "User",
@@ -14,6 +15,21 @@ const UserType = new GraphQLObjectType({
     username: { type: GraphQLString },
     email: { type: GraphQLString },
     displayName: { type: GraphQLString },
+    phone: { type: GraphQLString },
+    role: { type:  GraphQLString}
+  }),
+});
+
+const CompanyType = new GraphQLObjectType({
+  name: "Company",
+  description: "Company type",
+  fields: () => ({
+    id: { type: GraphQLID },
+    compamyname: { type: GraphQLString },
+    email: { type: GraphQLString },
+    displayName: { type: GraphQLString },
+    phone: { type: GraphQLString },
+    role: { type:  GraphQLString}
   }),
 });
 
@@ -30,38 +46,14 @@ const PostType = new GraphQLObjectType({
         return User.findById(parent.authorId);
       },
     },
-    comments: {
-      type: new GraphQLList(CommentType),
-      resolve(parent) {
-        return Comment.find({ postId: parent.id });
-      },
-    },
+    
   }),
 });
 
-const CommentType = new GraphQLObjectType({
-  name: "Comment",
-  description: "comments type",
-  fields: () => ({
-    id: { type: GraphQLID },
-    comment: { type: GraphQLString },
-    user: {
-      type: UserType,
-      resolve(parent) {
-        return User.findById(parent.userId);
-      },
-    },
-    post: {
-      type: PostType,
-      resolve(parent) {
-        return Post.findById(parent.postId);
-      },
-    },
-  }),
-});
 
 module.exports = {
   UserType,
   PostType,
-  CommentType,
+  CompanyType
+  
 };

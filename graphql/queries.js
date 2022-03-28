@@ -1,12 +1,33 @@
 const { GraphQLList, GraphQLID, GraphQLNonNull } = require("graphql");
-const { UserType, PostType, CommentType } = require("./types");
-const { User, Post, Comment } = require("../models");
+const { UserType, PostType} = require("./types");
+const { User, Post } = require("../models");
+var atob = require('atob');
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../config");
+const { authenticate } = require("../middleware/auth");
 
-const users = {
+ const users = {
   type: new GraphQLList(UserType),
   description: "Retrieves a list of users",
-  resolve: () => User.find(),
+  resolve: (_, args, context) =>{
+    token = context.user.split(" ")[1]
+    try {
+      const verified = jwt.verify(token, JWT_SECRET); 
+      console.log(verified.user.role)
+      if(verified.user.role == "admin"){
+        return User.find()
+      }
+    } catch (error) {
+      throw new Error('You are not authenticated!')
+      
+    }
+   
+   
+    
+     }
+
 };
+
 
 const user = {
   type: UserType,
@@ -30,19 +51,8 @@ const post = {
   resolve: (_, { id }) => Post.findById(id),
 };
 
-const comments = {
-  type: new GraphQLList(CommentType),
-  description: "Retrieves list of commnets",
-  resolve: () => Comment.find(),
-};
 
-const comment = {
-  type: CommentType,
-  description: "Retrieves a single comment",
-  args: {
-    id: { type: new GraphQLNonNull(GraphQLID) },
-  },
-  resolve: (_, { id }) => Comment.findById(id),
-};
 
-module.exports = { users, user, posts, post, comments, comment };
+
+
+module.exports = { users, user, posts, post };

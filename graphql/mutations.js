@@ -1,7 +1,7 @@
 const { GraphQLString, GraphQLID, GraphQLNonNull } = require("graphql");
-const { User, Post, Comment } = require("../models");
+const { User, Post} = require("../models");
 const { auth, bcrypt } = require("../util");
-const { PostType, CommentType } = require("./types");
+const { PostType} = require("./types");
 
 const register = {
   type: GraphQLString,
@@ -10,9 +10,11 @@ const register = {
     email: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: new GraphQLNonNull(GraphQLString) },
     displayName: { type: new GraphQLNonNull(GraphQLString) },
+    phone: { type: new GraphQLNonNull(GraphQLString) },
+    role: {type: new GraphQLNonNull(GraphQLString)}
   },
-  async resolve(_, { username, email, password, displayName }) {
-    const user = new User({ username, email, password, displayName });
+  async resolve(_, { username, email, password, displayName, phone}) {
+    const user = new User({ username, email, password, displayName, phone});
     user.password = await bcrypt.encryptPassword(user.password);
     await user.save();
 
@@ -20,6 +22,7 @@ const register = {
       _id: user._id,
       email: user.email,
       displayName: user.displayName,
+      role: user.role
     });
     return token;
   },
@@ -117,81 +120,11 @@ const deletePost = {
   },
 };
 
-const addComment = {
-  type: CommentType,
-  description: "Create a new comment for a blog post",
-  args: {
-    comment: { type: new GraphQLNonNull(GraphQLString) },
-    postId: { type: new GraphQLNonNull(GraphQLID) },
-  },
-  resolve(_, { postId, comment }, { verifiedUser }) {
-    const newComment = new Comment({
-      userId: verifiedUser._id,
-      postId,
-      comment,
-    });
-    return newComment.save();
-  },
-};
-
-const updateComment = {
-  type: CommentType,
-  description: "update a comment",
-  args: {
-    id: { type: new GraphQLNonNull(GraphQLID) },
-    comment: { type: new GraphQLNonNull(GraphQLString) },
-  },
-  async resolve(_, { id, comment }, { verifiedUser }) {
-    if (!verifiedUser) throw new Error("UnAuthorized");
-
-    const commentUpdated = await Comment.findOneAndUpdate(
-      {
-        _id: id,
-        userId: verifiedUser._id,
-      },
-      {
-        comment,
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!commentUpdated) throw new Error("No comment with the given ID");
-
-    return commentUpdated;
-  },
-};
-
-const deleteComment = {
-  type: GraphQLString,
-  description: "delete a comment",
-  args: {
-    id: { type: new GraphQLNonNull(GraphQLID) },
-  },
-  async resolve(_, { id }, { verifiedUser }) {
-    if (!verifiedUser) throw new Error("Unauthorized");
-
-    const commentDelete = await Comment.findOneAndDelete({
-      _id: id,
-      userId: verifiedUser._id,
-    });
-
-    if (!commentDelete)
-      throw new Error("No comment with the given ID for the user");
-
-    return "Comment deleted";
-  },
-};
 
 module.exports = {
   register,
   login,
   createPost,
-  addComment,
   updatePost,
   deletePost,
-  updateComment,
-  deleteComment,
 };
