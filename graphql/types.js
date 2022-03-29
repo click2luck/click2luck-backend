@@ -3,7 +3,7 @@ const {
   GraphQLID,
   GraphQLString,
   GraphQLList,
-  GraphQLInputType
+  GraphQLBoolean
 } = require("graphql");
 const { Post, User } = require("../models");
 
@@ -12,10 +12,9 @@ const UserType = new GraphQLObjectType({
   description: "User type",
   fields: () => ({
     id: { type: GraphQLID },
-    username: { type: GraphQLString },
+    nombre: { type: GraphQLString },
+    apellidos: { type: GraphQLString },
     email: { type: GraphQLString },
-    displayName: { type: GraphQLString },
-    phone: { type: GraphQLString },
     role: { type:  GraphQLString}
   }),
 });

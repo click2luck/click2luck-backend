@@ -6,23 +6,21 @@ const { PostType} = require("./types");
 const register = {
   type: GraphQLString,
   args: {
-    username: { type: new GraphQLNonNull(GraphQLString) },
+    nombre: { type: new GraphQLNonNull(GraphQLString) },
+    apellidos: { type: new GraphQLNonNull(GraphQLString) },
     email: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: new GraphQLNonNull(GraphQLString) },
-    displayName: { type: new GraphQLNonNull(GraphQLString) },
-    phone: { type: new GraphQLNonNull(GraphQLString) },
-    role: {type: new GraphQLNonNull(GraphQLString)}
   },
-  async resolve(_, { username, email, password, displayName, phone}) {
-    const user = new User({ username, email, password, displayName, phone});
+  async resolve(_, { nombre,apellidos, email, password, role}) {
+    const user = new User({ nombre,apellidos, email, password, role});
     user.password = await bcrypt.encryptPassword(user.password);
+    console.log(user)
     await user.save();
 
     const token = auth.createJWTToken({
       _id: user._id,
       email: user.email,
-      displayName: user.displayName,
-      role: user.role
+      role: "basico"
     });
     return token;
   },

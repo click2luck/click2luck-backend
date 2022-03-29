@@ -5,12 +5,13 @@ const { authenticate } = require("./middleware/auth");
 const router = require('./routes/userRoutes.js') 
 const cors = require('cors');
 const app = express();
+const cookieParser = require('cookie-parser')
 app.use(express.json()); //To parse JSON bodies
 app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
+
 //app.get("/", authenticate, (req, res) => res.json({ msg: "Welcome. Go to /graphql" }));
-app.use(
-  "/graphql", authenticate,
-  graphqlHTTP(req=> ({
+app.post(
+  "/graphql",  graphqlHTTP(req => ({
     schema,
     context: {
       user: req.headers.authorization
@@ -19,14 +20,14 @@ app.use(
     graphiql: true,
   }))
 );
-
+app.use(cookieParser())
 app.get("/", (req, res) => {
-  console.log("holaa")
+  console.log(req.cookies)
   
   res.header("Access-Control-Allow-Origin", "*");
   res.send({ status: 'success' }); } );
  
-app.post("/", (req, res) => {
+app.post("/", cookieParser(),(req, res) => {
 
   console.log(req.body)
 })  

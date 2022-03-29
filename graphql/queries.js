@@ -10,22 +10,17 @@ const { authenticate } = require("../middleware/auth");
   type: new GraphQLList(UserType),
   description: "Retrieves a list of users",
   resolve: (_, args, context) =>{
-    token = context.user.split(" ")[1]
     try {
+    token = context.user.split(" ")[1]
       const verified = jwt.verify(token, JWT_SECRET); 
       console.log(verified.user.role)
       if(verified.user.role == "admin"){
         return User.find()
       }
     } catch (error) {
-      throw new Error('You are not authenticated!')
-      
-    }
-   
-   
-    
+      throw new Error('You are not authenticated!')     
+    }  
      }
-
 };
 
 
