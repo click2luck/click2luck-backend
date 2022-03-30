@@ -11,10 +11,11 @@ const register = {
     email: { type: new GraphQLNonNull(GraphQLString) },
     password: { type: new GraphQLNonNull(GraphQLString) },
   },
-  async resolve(_, { nombre,apellidos, email, password, role}) {
+  async resolve(_, { nombre,apellidos, email, password, role},context) {
     const user = new User({ nombre,apellidos, email, password, role});
     user.password = await bcrypt.encryptPassword(user.password);
     console.log(user)
+    //console.log(context.cookie)
     await user.save();
 
     const token = auth.createJWTToken({
@@ -22,7 +23,10 @@ const register = {
       email: user.email,
       role: "basico"
     });
-    return token;
+   context.res.cookie("secureCookie", token, {
+    httpOnly: true, 
+    expires: new Date(new Date().getTime() + 5 * 140000000),
+  });
   },
 };
 

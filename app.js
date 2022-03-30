@@ -8,18 +8,20 @@ const app = express();
 const cookieParser = require('cookie-parser')
 app.use(express.json()); //To parse JSON bodies
 app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
-
-//app.get("/", authenticate, (req, res) => res.json({ msg: "Welcome. Go to /graphql" }));
 app.post(
-  "/graphql",  graphqlHTTP(req => ({
+  "/graphql",  graphqlHTTP((req, res, graphQLParams) => {
+    return {
     schema,
     context: {
-      user: req.headers.authorization
-      
-    },
+      user: req.headers.authorization,
+      res
+    }
+    ,
     graphiql: true,
-  }))
+}})
 );
+
+
 app.use(cookieParser())
 app.get("/", (req, res) => {
   console.log(req.cookies)
@@ -27,7 +29,7 @@ app.get("/", (req, res) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.send({ status: 'success' }); } );
  
-app.post("/", cookieParser(),(req, res) => {
+app.get("/", cookieParser(),(req, res) => {
 
   console.log(req.body)
 })  
